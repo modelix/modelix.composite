@@ -1,12 +1,10 @@
 rootProject.name = "modelix.composite"
 
 includeBuild("../modelix.core")
-//includeBuild("modelix.core/bulk-model-sync-gradle-test")
-//includeBuild("modelix.core/model-api-gen-gradle-test")
-//includeBuild("modelix.core/model-client-js-test")
+includeBuild("../modelix.editor")
 includeBuild("../modelix.incremental")
 includeBuild("../modelix.kubernetes")
+includeBuild("../modelix.mps-api")
 includeBuild("../modelix.mps-build-tools")
 includeBuild("../modelix.mps-plugins")
-includeBuild("../modelix.editor")
 includeBuild("../modelix.workspaces")
