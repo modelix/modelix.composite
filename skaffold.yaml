@@ -1,0 +1,71 @@
+# To learn more about the skaffold.yaml schema visit
+# https://skaffold.dev/docs/references/yaml/
+apiVersion: skaffold/v4beta11
+kind: Config
+build:
+  local: {}
+  platforms: ["linux/amd64", "linux/arm64"]
+  artifacts:
+
+    - image: modelix-workspace-manager
+      jib:
+        project: modelix.workspaces:workspace-manager
+    - image: modelix-workspace-job
+      context: ../modelix.workspaces/workspace-job
+
+    - image: modelix-proxy
+      context: ../modelix.kubernetes/proxy
+    - image: modelix-keycloak
+      context: ../modelix.kubernetes
+      docker:
+        target: keycloak
+
+    - image: model-server
+      jib:
+        project: modelix.core:model-server
+    - image: mps-git-import
+      jib:
+        project: modelix.core:mps-git-import-cli
+
+deploy:
+  statusCheck: false
+  statusCheckDeadlineSeconds: 120
+  helm:
+    releases:
+      - name: dev
+        chartPath: ../modelix.kubernetes/helm/modelix
+        skipBuildDependencies: true
+        recreatePods: false
+        wait: true
+        namespace: modelix-dev
+        createNamespace: true
+        setValueTemplates:
+          workspaces.manager.image.repository: "{{.IMAGE_REPO_modelix_workspace_manager}}"
+          workspaces.manager.image.tag: "{{.IMAGE_TAG_modelix_workspace_manager}}@{{.IMAGE_DIGEST_modelix_workspace_manager}}"
+          workspaces.job.image.repository: "{{.IMAGE_REPO_modelix_workspace_job}}"
+          workspaces.job.image.tag: "{{.IMAGE_TAG_modelix_workspace_job}}@{{.IMAGE_DIGEST_modelix_workspace_job}}"
+          modelServer.image.repository: "{{.IMAGE_REPO_model_server}}"
+          modelServer.image.tag: "{{.IMAGE_TAG_model_server}}@{{.IMAGE_DIGEST_model_server}}"
+          proxy.image.repository: "{{.IMAGE_REPO_modelix_proxy}}"
+          proxy.image.tag: "{{.IMAGE_TAG_modelix_proxy}}@{{.IMAGE_DIGEST_modelix_proxy}}"
+          gitImport.image.repository: "{{.IMAGE_REPO_mps_git_import}}"
+          gitImport.image.tag: "{{.IMAGE_TAG_mps_git_import}}@{{.IMAGE_DIGEST_mps_git_import}}"
+          keycloak.image.repository: "{{.IMAGE_REPO_modelix_keycloak}}"
+          keycloak.image.tag: "{{.IMAGE_TAG_modelix_keycloak}}@{{.IMAGE_DIGEST_modelix_keycloak}}"
+        setValues:
+          ingress.hostname: "localhost"
+          keycloak.optimizedStartup: false
+          kestra.serviceAccountName: dev-modelix-sa
+
+profiles:
+  - name: stuttgart-dev
+    activation:
+      - kubeContext: stuttgart-office
+    patches:
+      - op: replace
+        path: /deploy/helm/releases/0/setValues
+        value:
+          ingress.hostname: "modelix-dev.q60.de"
+          keycloak.optimizedStartup: false
+          kestra.serviceAccountName: dev-modelix-sa
+          certmanager.enabled: true
