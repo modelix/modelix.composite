@@ -9,9 +9,9 @@ build:
 
     - image: modelix-workspace-manager
       jib:
-        project: modelix.workspaces:workspace-manager
+        project: modelix.kubernetes:workspace-manager
     - image: modelix-workspace-job
-      context: ../modelix.workspaces/workspace-job
+      context: ../modelix.kubernetes/workspace-job
 
     - image: modelix-proxy
       context: ../modelix.kubernetes/proxy
