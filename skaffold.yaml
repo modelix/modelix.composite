@@ -14,7 +14,9 @@ build:
       context: ../modelix.kubernetes/workspace-job
 
     - image: modelix-proxy
-      context: ../modelix.kubernetes/proxy
+      context: ../modelix.kubernetes
+      docker:
+        dockerfile: proxy/Dockerfile
     - image: modelix-keycloak
       context: ../modelix.kubernetes
       docker:
